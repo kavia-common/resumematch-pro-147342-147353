@@ -25,10 +25,12 @@ Token handling in frontend:
 - Clear with setAuthToken(null) when logging out.
 
 Local dev quick start:
-1) Start MongoDB locally on 27017 or configure MONGODB_URL.
+1) Start MongoDB locally on 27017 or configure MONGODB_URL to a reachable Mongo instance (the backend uses MongoDB, not MySQL).
 2) Backend:
-   - Copy backend/.env.example to backend/.env and set JWT_SECRET.
+   - Copy backend/.env.example to backend/.env and set JWT_SECRET (>=32 chars).
+   - Optionally set CORS_ALLOWED_ORIGINS to include your frontend origin(s).
    - Run: ./gradlew bootRun
+   - Verify: GET /health should return "OK"; Swagger UI at /swagger-ui.html; OpenAPI at /api-docs
 3) Frontend:
-   - Copy react_frontend/.env.example to .env and set REACT_APP_API_BASE (or rely on fallback).
+   - Copy react_frontend/.env.example to react_frontend/.env and set REACT_APP_API_BASE (or rely on fallback).
    - Run: npm start
