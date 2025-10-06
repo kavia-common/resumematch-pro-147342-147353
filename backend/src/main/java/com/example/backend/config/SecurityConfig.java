@@ -1,7 +1,6 @@
 package com.example.backend.config;
 
 import com.example.backend.security.JwtAuthenticationFilter;
-import com.example.backend.service.UserService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -31,10 +30,8 @@ public class SecurityConfig {
         return new BCryptPasswordEncoder();
     }
 
-    @Bean
-    public UserDetailsService userDetailsService(UserService userService) {
-        return userService;
-    }
+    // Use the existing @Service UserService bean (which implements UserDetailsService)
+    // by injecting UserDetailsService where needed, avoiding duplicate bean definitions.
 
     @Bean
     public AuthenticationManager authenticationManager(UserDetailsService userDetailsService, BCryptPasswordEncoder encoder) {
