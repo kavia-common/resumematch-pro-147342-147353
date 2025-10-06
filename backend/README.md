@@ -31,6 +31,12 @@ Temporary No-Mongo Startup (for previews without MongoDB):
   - Remove SPRING_PROFILES_ACTIVE or set to another profile.
   - Ensure MONGODB_URL and MONGODB_DB point to a reachable MongoDB instance.
 
+Logs:
+- Application logs are written to backend/logs/spring.log
+- Log files roll over daily and when size exceeds ~10MB
+- Console logging remains enabled for convenience
+- Log directory is created automatically if missing
+
 API:
 - Base Path: /
 - Auth: /auth/register, /auth/login
