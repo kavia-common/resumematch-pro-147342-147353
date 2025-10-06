@@ -67,5 +67,15 @@ dependencies {
 }
 
 tasks.named('test') {
+    // Ensure JUnit Platform for Spring Boot 3+
     useJUnitPlatform()
+
+    // Provide required environment variables for tests so context can boot without external env
+    environment 'JWT_SECRET', 'test-secret-32chars-minimum-for-hmac-which-is-long'
+
+    // Provide system properties used by application.properties
+    systemProperty 'app.storage.dir', './build/test-storage'
+
+    // Note: If MongoDB needs to be overridden for tests (e.g., Testcontainers or embedded),
+    // we can add spring.data.mongodb.* properties here in a subsequent step.
 }
