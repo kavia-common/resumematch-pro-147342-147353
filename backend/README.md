@@ -7,6 +7,7 @@ Environment variables (copy .env.example to .env):
 - JWT_EXP_MINUTES (default: 120)
 - FILE_STORAGE_DIR (default: ./storage)
 - CORS_ALLOWED_ORIGINS (default: http://localhost:3000)
+- SPRING_PROFILES_ACTIVE (optional; set to no-mongo to start without MongoDB)
 
 Security note:
 - JWT_SECRET must be provided. Without it, the app will fail to start as expected for security.
@@ -16,6 +17,19 @@ Run locally:
 2) Set environment vars (create backend/.env or export in shell).
 3) From backend directory:
    ./gradlew bootRun
+
+Temporary No-Mongo Startup (for previews without MongoDB):
+- To boot the backend without a MongoDB instance, use the no-mongo Spring profile. This disables Spring Data Mongo auto-configuration.
+- How to run:
+  - Set environment variable: SPRING_PROFILES_ACTIVE=no-mongo
+  - Then start: ./gradlew bootRun
+- Limitations when running with no-mongo:
+  - Endpoints that depend on persistence (e.g., upload, resumes, jobs, analysis, matches) may return empty responses or 503 Service Unavailable.
+  - Authentication still requires JWT_SECRET but user persistence will not work without Mongo.
+  - Health (/health), docs (/swagger-ui.html, /api-docs), and CORS should still work so previews can load.
+- To re-enable Mongo:
+  - Remove SPRING_PROFILES_ACTIVE or set to another profile.
+  - Ensure MONGODB_URL and MONGODB_DB point to a reachable MongoDB instance.
 
 API:
 - Base Path: /
@@ -38,7 +52,8 @@ Integration with frontend:
 Preview troubleshooting:
 - Backend fails to start:
   - Ensure backend/.env exists and JWT_SECRET is set (>=32 characters recommended).
-  - Verify Mongo is reachable via MONGODB_URL and MONGODB_DB (this backend uses MongoDB, not MySQL).
+  - If you don't have Mongo for previews, set SPRING_PROFILES_ACTIVE=no-mongo.
+  - Otherwise verify Mongo is reachable via MONGODB_URL and MONGODB_DB (this backend uses MongoDB, not MySQL).
 - Frontend cannot call API:
   - Ensure REACT_APP_API_BASE points to the backend URL.
   - Add the frontend origin to CORS_ALLOWED_ORIGINS in backend/.env if you see CORS errors.

@@ -5,6 +5,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 /**
  * Application entrypoint.
+ * To start without MongoDB, set SPRING_PROFILES_ACTIVE=no-mongo (loads application-no-mongo.properties).
  */
 @SpringBootApplication
 public class backendApplication {

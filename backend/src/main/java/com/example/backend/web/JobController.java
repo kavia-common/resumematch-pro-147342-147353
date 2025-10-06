@@ -7,10 +7,12 @@ import com.example.backend.web.dto.ApiResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.constraints.NotBlank;
+import org.springframework.core.env.Environment;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -23,10 +25,17 @@ public class JobController {
 
     private final JobRepository jobs;
     private final JDParserService jdParserService;
+    private final Environment env;
 
-    public JobController(JobRepository jobs, JDParserService jdParserService) {
+    public JobController(JobRepository jobs, JDParserService jdParserService, Environment env) {
         this.jobs = jobs;
         this.jdParserService = jdParserService;
+        this.env = env;
+    }
+
+    private boolean noMongoActive() {
+        String[] profiles = env.getActiveProfiles();
+        return Arrays.stream(profiles).anyMatch(p -> p.equalsIgnoreCase("no-mongo"));
     }
 
     public record CreateJobTextRequest(@NotBlank String title, @NotBlank String text) {}
@@ -35,6 +44,9 @@ public class JobController {
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "Create job from text", description = "Create a job description by submitting raw text.")
     public ApiResponse<JobDescription> createFromText(@RequestBody CreateJobTextRequest req, Authentication auth) {
+        if (noMongoActive()) {
+            return ApiResponse.fail("Service Unavailable: persistence disabled under 'no-mongo' profile");
+        }
         JobDescription jd = jdParserService.persistFromRawText(auth.getName(), req.title(), req.text());
         return ApiResponse.ok(jd);
     }
@@ -43,6 +55,9 @@ public class JobController {
     @GetMapping
     @Operation(summary = "List jobs", description = "List jobs for current user")
     public ApiResponse<List<JobDescription>> list(Authentication auth) {
+        if (noMongoActive()) {
+            return ApiResponse.fail("Service Unavailable: persistence disabled under 'no-mongo' profile");
+        }
         return ApiResponse.ok(jobs.findByUserId(auth.getName()));
     }
 
@@ -50,6 +65,9 @@ public class JobController {
     @GetMapping("/{id}")
     @Operation(summary = "Get job", description = "Get a specific job by id")
     public ApiResponse<JobDescription> get(@PathVariable String id, Authentication auth) {
+        if (noMongoActive()) {
+            return ApiResponse.fail("Service Unavailable: persistence disabled under 'no-mongo' profile");
+        }
         JobDescription j = jobs.findById(id).orElseThrow();
         if (!j.getUserId().equals(auth.getName())) throw new RuntimeException("Forbidden");
         return ApiResponse.ok(j);
@@ -59,6 +77,9 @@ public class JobController {
     @DeleteMapping("/{id}")
     @Operation(summary = "Delete job", description = "Delete a specific job by id")
     public ApiResponse<Boolean> delete(@PathVariable String id, Authentication auth) {
+        if (noMongoActive()) {
+            return ApiResponse.fail("Service Unavailable: persistence disabled under 'no-mongo' profile");
+        }
         JobDescription j = jobs.findById(id).orElseThrow();
         if (!j.getUserId().equals(auth.getName())) throw new RuntimeException("Forbidden");
         jobs.deleteById(id);
@@ -71,6 +92,9 @@ public class JobController {
     @PatchMapping(value = "/{id}", consumes = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "Patch job", description = "Update job description text")
     public ApiResponse<JobDescription> patch(@PathVariable String id, @RequestBody PatchJobRequest req, Authentication auth) {
+        if (noMongoActive()) {
+            return ApiResponse.fail("Service Unavailable: persistence disabled under 'no-mongo' profile");
+        }
         JobDescription j = jobs.findById(id).orElseThrow();
         if (!j.getUserId().equals(auth.getName())) throw new RuntimeException("Forbidden");
         j.setFullText(req.fullText());
